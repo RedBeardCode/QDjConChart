@@ -8,7 +8,8 @@ import pytest
 import responses
 
 from rest_client.generate_classes import generate_classes
-from rest_client.generate_classes import get_provided_classes, get_class_meta, get_objects
+from rest_client.generate_classes import get_provided_classes, get_class_meta
+from rest_client.generate_classes import get_objects
 from .rest_responses import PRODUCT_GET_ARGS, PRODUCT_OPTIONS_ARGS
 from .rest_responses import PRODUCT_GET_KWARGS, PRODUCT_OPTIONS_KWARGS
 from .rest_responses import PRODUCT_LIST_GET_ARGS, PRODUCT_LIST_GET_KWARGS
