@@ -1,9 +1,12 @@
 language: python
+sudo: required
+dist: trusty
 python:
   - "2.7"
   - "3.5"
 
-
+virtualenv:
+  system_site_packages: true
 
 before_script:
 # Qt needs a display for some of the tests, and it's only run on the system site packages install
@@ -11,6 +14,8 @@ before_script:
 - "sh -e /etc/init.d/xvfb start"
 
 install:
+  - sudo apt-get update
+  - sudo apt-get -y install python3-pyqt5
   - pip install -r requirements.txt
   - pip install -r requirements_dev.txt
   - pip install python-coveralls
