@@ -20,7 +20,9 @@ from .rest_responses import PRODUCT_MEAS_GET_KWARGS
 def test_getting_classes():
     responses.add(*PRODUCT_GET_ARGS, **PRODUCT_MEAS_GET_KWARGS)  # pylint: disable=E1101
     classes = get_provided_classes('http://test/api/', 'me', 'you')
-    assert classes == ['Product', 'Measurement']
+    assert len(classes) == 2
+    for cls in classes:
+        assert cls in ['Product', 'Measurement']
 
 
 @responses.activate  # pylint: disable=E1101
