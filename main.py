@@ -5,11 +5,10 @@
 Main app to start the gui
 """
 import argparse
-
 from PyQt5.QtWidgets import QApplication  # pylint: disable=E0611
 from PyQt5.QtWidgets import QMainWindow  # pylint: disable=E0611
 
-from admin_view import create_admin_view
+from gui.admin_view import create_admin_view
 
 
 def process_cl_args():

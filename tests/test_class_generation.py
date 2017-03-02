@@ -6,12 +6,13 @@ Testing the generation of the classes for the rest api
 """
 import pytest
 import responses
-from generate_classes import get_provided_classes, get_class_meta, get_objects
-from generate_classes import generate_classes
+
+from rest_client.generate_classes import generate_classes
+from rest_client.generate_classes import get_provided_classes, get_class_meta, get_objects
 from .rest_responses import PRODUCT_GET_ARGS, PRODUCT_OPTIONS_ARGS
 from .rest_responses import PRODUCT_GET_KWARGS, PRODUCT_OPTIONS_KWARGS
-from .rest_responses import PRODUCT_MEAS_GET_KWARGS
 from .rest_responses import PRODUCT_LIST_GET_ARGS, PRODUCT_LIST_GET_KWARGS
+from .rest_responses import PRODUCT_MEAS_GET_KWARGS
 
 
 @responses.activate  # pylint: disable=E1101
@@ -39,7 +40,7 @@ def test_create_classes():
     cls_names = generate_classes('http://test/api/', 'me', 'you')
     assert cls_names == ['Product']
     try:
-        from generate_classes import Product
+        from rest_client.generate_classes import Product
     except ImportError:
         pytest.fail('Class couldn´t imported')
     prod = Product()

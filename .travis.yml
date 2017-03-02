@@ -24,7 +24,7 @@ install:
 
 script:
 
-  - py.test  --pylama --cov-config .coveragerc
+  - py.test  --pylama --cov-config .coveragerc --cov=gui --cov=rest_client --cov=main.py
 
 
 after_success:

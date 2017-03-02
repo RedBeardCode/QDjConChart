@@ -6,15 +6,14 @@ Create the view to administrate the db classes
 """
 import responses
 from PyQt5.QtCore import Qt  # pylint: disable=E0611
-
 from PyQt5.QtWidgets import QDockWidget  # pylint: disable=E0611
 from PyQt5.QtWidgets import QListWidget  # pylint: disable=E0611
 from PyQt5.QtWidgets import QTableWidget  # pylint: disable=E0611
 
-from generate_classes import generate_classes
+from rest_client.generate_classes import generate_classes
+from settings import API_PWD, API_URL, API_USER
 from tests.rest_responses import PRODUCT_GET_KWARGS, PRODUCT_GET_ARGS
 from tests.rest_responses import PRODUCT_OPTIONS_KWARGS, PRODUCT_OPTIONS_ARGS
-from settings import API_PWD, API_URL, API_USER
 
 
 class TableList(QListWidget):
