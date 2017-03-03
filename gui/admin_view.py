@@ -111,11 +111,3 @@ class AdminView(QObject):
                     table_item.setFlags(Qt.ItemIsEnabled)
                 self.__current_table.setItem(i, j, table_item)
         self.__parent.setCentralWidget(self.__current_table)
-
-
-def create_admin_view(parent, use_debug_server=False):
-    """
-    Creates the gui objects for the admin view
-    :param parent: Parent window
-    """
-    _ = AdminView(parent, use_debug_server)

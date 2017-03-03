@@ -8,7 +8,7 @@ import argparse
 from PyQt5.QtWidgets import QApplication  # pylint: disable=E0611
 from PyQt5.QtWidgets import QMainWindow  # pylint: disable=E0611
 
-from gui.admin_view import create_admin_view
+from gui.admin_view import AdminView
 
 
 def process_cl_args():
@@ -30,7 +30,7 @@ def main():
     args, _ = process_cl_args()
     app = QApplication([])
     win = QMainWindow(None)
-    create_admin_view(win, use_debug_server=args.debug_server)
+    _ = AdminView(win, use_debug_server=args.debug_server)
     win.show()
     app.exec_()
 

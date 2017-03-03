@@ -8,12 +8,12 @@ Unit test for creation of the admin view
 from PyQt5.QtWidgets import QMainWindow  # pylint: disable=E0611
 from PyQt5.QtWidgets import QTableWidget  # pylint: disable=E0611
 
-from gui.admin_view import create_admin_view, TableList
+from gui.admin_view import TableList, AdminView
 
 
 def test_tablelist(qtbot):
     main_win = QMainWindow()
-    create_admin_view(main_win, True)
+    AdminView(main_win, True)
     tablelist = main_win.findChild(TableList)
     qtbot.addWidget(main_win)
     assert tablelist
