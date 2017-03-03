@@ -14,9 +14,12 @@ from PyQt5.QtWidgets import QTableWidgetItem  # pylint: disable=E0611
 
 from rest_client.generate_classes import generate_classes, get_objects
 from settings import API_PWD, API_URL, API_USER
-from tests.rest_responses import PRODUCT_GET_KWARGS, PRODUCT_GET_ARGS
+from tests.rest_responses import PRODUCT_GET_ARGS
+from tests.rest_responses import PRODUCT_MEAS_GET_KWARGS
 from tests.rest_responses import PRODUCT_OPTIONS_KWARGS, PRODUCT_OPTIONS_ARGS
 from tests.rest_responses import PRODUCT_LIST_GET_ARGS, PRODUCT_LIST_GET_KWARGS
+from tests.rest_responses import MEAS_OPTIONS_ARGS, MEAS_OPTIONS_KWARGS
+from tests.rest_responses import MEAS_LIST_GET_ARGS, MEAS_LIST_GET_KWARGS
 
 
 class TableList(QListWidget):  # pylint: disable=R0903
@@ -29,9 +32,11 @@ class TableList(QListWidget):  # pylint: disable=R0903
         super(TableList, self).__init__(*args, **kwargs)
         if self.__use_debug_server:
             responses.add(*PRODUCT_GET_ARGS,   # pylint: disable=E1101
-                          **PRODUCT_GET_KWARGS)
+                          **PRODUCT_MEAS_GET_KWARGS)
             responses.add(*PRODUCT_OPTIONS_ARGS,   # pylint: disable=E1101
                           **PRODUCT_OPTIONS_KWARGS)
+            responses.add(*MEAS_OPTIONS_ARGS,
+                          **MEAS_OPTIONS_KWARGS)
         self.table_cls_names = generate_classes(API_URL, API_USER, API_PWD)
         self.add_available_tables()
 
@@ -81,6 +86,8 @@ class AdminView(QObject):
         if self.__use_debug_server:
             responses.add(*PRODUCT_LIST_GET_ARGS,   # pylint: disable=E1101
                           **PRODUCT_LIST_GET_KWARGS)
+            responses.add(*MEAS_LIST_GET_ARGS,   # pylint: disable=E1101
+                          **MEAS_LIST_GET_KWARGS)
         objects = get_objects(API_URL, item.text(), API_USER, API_PWD)
         tab_name = '{0} table'.format(item.text())
         members = [mem for mem in dir(objects[0]) if not mem.startswith('_')
@@ -90,13 +97,21 @@ class AdminView(QObject):
                                             len(members),
                                             self.__parent,
                                             objectName=tab_name)
-        self.__current_table.setHorizontalHeaderLabels(members)
+
         for i, obj in enumerate(objects):
             for j, mem in enumerate(members):
+                field = getattr(obj, mem + '_field')
+                if i == 0:
+                    label = field.label
+                    self.__current_table.setHorizontalHeaderItem(
+                        j, QTableWidgetItem(label))
                 value = getattr(obj, mem)
-                item = QTableWidgetItem(value)
-                item.setFlags(Qt.ItemIsEnabled)
-                self.__current_table.setItem(i, j, item)
+                if isinstance(value, list):
+                    value = '\n'.join(value)
+                table_item = QTableWidgetItem(value)
+                if field.read_only:
+                    table_item.setFlags(Qt.ItemIsEnabled)
+                self.__current_table.setItem(i, j, table_item)
         self.__parent.setCentralWidget(self.__current_table)
 
 

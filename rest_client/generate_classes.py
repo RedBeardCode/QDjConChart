@@ -22,8 +22,10 @@ class RestBase(object):  # pylint: disable=R0903
             setattr(
                 self.__class__, field_name,
                 property(
-                    lambda self: getattr(self, field_name + '_field').get(),  # pylint: disable=W0640
-                    lambda self, v: getattr(self, field_name + '_field').set(v)  # pylint: disable=W0640
+                    lambda self, fna=field_name:
+                        getattr(self, fna + '_field').get(),  # pylint: disable=W0640
+                    lambda self, v, fna=field_name:
+                        getattr(self, fna + '_field').set(v)  # pylint: disable=W0640
                 )
             )
         for key in kwargs:
@@ -87,7 +89,7 @@ class StringField(Field):  # pylint: disable=R0903
     """
     def __init__(self, *args, **kwargs):
         super(StringField, self).__init__(*args, **kwargs)
-        self.__max_length = kwargs['max_length']
+        self.__max_length = kwargs.get('max_length', 2048)
 
     @property
     def max_length(self):
@@ -106,7 +108,36 @@ class StringField(Field):  # pylint: disable=R0903
         self.yvalue = value
 
 
-FIELDS = {'string': StringField}
+class DateTime(Field):
+    """
+    Class for datetime field
+    """
+    def __init__(self, *args, **kwargs):
+        super(DateTime, self).__init__(*args, **kwargs)
+
+
+class FloatField(Field):
+    """
+    Class for float fields
+    """
+    def __init__(self, *args, **kwargs):
+        super(FloatField, self).__init__(*args, **kwargs)
+
+    def set(self, value):
+        """
+        Set the float value if it isn't able to convert to float a exception is
+        raised
+        :param value: New value
+        """
+        self.yvalue = float(value)
+
+
+FIELDS = {'string': StringField,
+          'datetime': DateTime,
+          'field': Field,
+          'file upload': Field,
+          'decimal': FloatField,
+          }
 
 
 def get_provided_classes(rooturl, user, pwd):
