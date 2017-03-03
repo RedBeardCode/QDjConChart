@@ -23,9 +23,9 @@ class RestBase(object):  # pylint: disable=R0903
                 self.__class__, field_name,
                 property(
                     lambda self, fna=field_name:
-                        getattr(self, fna + '_field').get(),  # pylint: disable=W0640
+                    getattr(self, fna + '_field').get(),  # pylint: disable=W0640
                     lambda self, v, fna=field_name:
-                        getattr(self, fna + '_field').set(v)  # pylint: disable=W0640
+                    getattr(self, fna + '_field').set(v)  # pylint: disable=W0640
                 )
             )
         for key in kwargs:
@@ -136,8 +136,7 @@ FIELDS = {'string': StringField,
           'datetime': DateTime,
           'field': Field,
           'file upload': Field,
-          'decimal': FloatField,
-          }
+          'decimal': FloatField}
 
 
 def get_provided_classes(rooturl, user, pwd):

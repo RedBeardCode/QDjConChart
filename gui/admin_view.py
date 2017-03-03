@@ -35,7 +35,7 @@ class TableList(QListWidget):  # pylint: disable=R0903
                           **PRODUCT_MEAS_GET_KWARGS)
             responses.add(*PRODUCT_OPTIONS_ARGS,   # pylint: disable=E1101
                           **PRODUCT_OPTIONS_KWARGS)
-            responses.add(*MEAS_OPTIONS_ARGS,
+            responses.add(*MEAS_OPTIONS_ARGS,   # pylint: disable=E1101
                           **MEAS_OPTIONS_KWARGS)
         self.table_cls_names = generate_classes(API_URL, API_USER, API_PWD)
         self.add_available_tables()

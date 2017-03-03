@@ -17,9 +17,18 @@ def test_tablelist(qtbot):
     tablelist = main_win.findChild(TableList)
     qtbot.addWidget(main_win)
     assert tablelist
-    assert tablelist.count() == 1
+    assert tablelist.count() == 2
     item = tablelist.item(0)
     assert item.text() == 'Product'
     item.setSelected(True)
     table = main_win.findChild(QTableWidget, 'Product table')
     assert table
+    assert table.rowCount() == 3
+    assert table.columnCount() == 1
+    item = tablelist.item(1)
+    assert item.text() == 'Measurement'
+    item.setSelected(True)
+    table = main_win.findChild(QTableWidget, 'Measurement table')
+    assert table
+    assert table.rowCount() == 3
+    assert table.columnCount() == 11
