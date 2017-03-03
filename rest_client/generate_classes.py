@@ -4,16 +4,20 @@
 """
 Generating the classes for the provides Models from the rest api
 """
+from json import dumps
 from types import new_class
 
 from requests import get, options
+from requests import post
 
 
 class RestBase(object):  # pylint: disable=R0903
     """
     Base class for the for the rest api tables generated classes
     """
-    def __init__(self, *_, **kwargs):
+    def __init__(self, user, pwd, *_, **kwargs):
+        self.__user = user
+        self.__pwd = pwd
         self.__url = kwargs.pop('url', '')
         for field_name in self.meta:  # pylint: disable=E1101
             field = FIELDS[self.meta[field_name]['type']](  # pylint: disable=E1101
@@ -37,6 +41,28 @@ class RestBase(object):  # pylint: disable=R0903
         Url to the REST Object
         """
         return self.__url
+
+    def get_fields(self):
+        """
+        Returns the names of all fields of the object
+        """
+        fields = [mem for mem in dir(self) if not mem.startswith('_')
+                  and mem not in ['meta', 'url']
+                  and not callable(getattr(self, mem))
+                  and not mem.endswith('_field')]
+        return fields
+
+    def post(self):
+        """
+        Sending update of the object back to rest server
+        """
+        field_names = self.get_fields()
+        values = [None] * len(field_names)
+        field_dict = dict(zip(field_names, values))
+        for field in field_names:
+            field_dict[field] = getattr(self, field)
+        field_json = dumps(field_dict)
+        post(self.url, field_json, auth=(self.__user, self.__pwd))
 
 
 class Field(object):
@@ -204,7 +230,7 @@ def generate_classes(rooturl, user, pwd):
 def get_objects(rooturl, clsname, user, pwd):
     """
     Reads the db entries from the rest api and returns a list of objects for
-    each entry
+    each entry. IMPORTANT: generate_classes has to be called before
     :param rooturl: base url of the rest api
     :param clsname: class name for witch the entries should be fetch
     :param user: Username for the Rest API
@@ -217,5 +243,5 @@ def get_objects(rooturl, clsname, user, pwd):
     cls = globals()[clsname]
     obj_list = []
     for kwargs in resp_list:
-        obj_list.append(cls(**kwargs))
+        obj_list.append(cls(user, pwd, **kwargs))
     return obj_list

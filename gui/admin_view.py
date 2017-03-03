@@ -90,9 +90,7 @@ class AdminView(QObject):
                           **MEAS_LIST_GET_KWARGS)
         objects = get_objects(API_URL, item.text(), API_USER, API_PWD)
         tab_name = '{0} table'.format(item.text())
-        members = [mem for mem in dir(objects[0]) if not mem.startswith('_')
-                   and mem not in ['meta', 'url']
-                   and not mem.endswith('_field')]
+        members = objects[0].get_fields()
         self.__current_table = QTableWidget(len(objects),
                                             len(members),
                                             self.__parent,
