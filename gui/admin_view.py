@@ -22,23 +22,45 @@ from tests.rest_responses import MEAS_OPTIONS_ARGS, MEAS_OPTIONS_KWARGS
 from tests.rest_responses import MEAS_LIST_GET_ARGS, MEAS_LIST_GET_KWARGS
 
 
+class RequestMock(responses.RequestsMock):
+    """
+    Wrapper around responses.RequestMock to make it easy to enalbe/disable the
+    debug_server
+    """
+    def __init__(self, use_debug_server, *args,
+                 assert_all_requests_are_fired=False, **kwargs):
+        self.__use_debug_server = use_debug_server
+        super(RequestMock, self).__init__(
+            *args, assert_all_requests_are_fired=assert_all_requests_are_fired,
+            **kwargs)
+
+    def __enter__(self):
+        if self.__use_debug_server:
+            super(RequestMock, self).__enter__()
+        return self
+
+    def __exit__(self, *args):
+        if self.__use_debug_server:
+            super(RequestMock, self).__exit__(*args)
+
+
 class TableList(QListWidget):  # pylint: disable=R0903
     """
     Widget which shows a list of all table of the REST API
     """
-    @responses.activate  # pylint: disable=E1101
+
     def __init__(self, *args, **kwargs):
         self.__use_debug_server = kwargs.pop('use_debug_server', False)
         super(TableList, self).__init__(*args, **kwargs)
-        if self.__use_debug_server:
-            responses.add(*PRODUCT_GET_ARGS,   # pylint: disable=E1101
-                          **PRODUCT_MEAS_GET_KWARGS)
-            responses.add(*PRODUCT_OPTIONS_ARGS,   # pylint: disable=E1101
-                          **PRODUCT_OPTIONS_KWARGS)
-            responses.add(*MEAS_OPTIONS_ARGS,   # pylint: disable=E1101
-                          **MEAS_OPTIONS_KWARGS)
-        self.table_cls_names = generate_classes(API_URL, API_USER, API_PWD)
-        self.add_available_tables()
+        with RequestMock(self.__use_debug_server) as rsps:
+            rsps.add(*PRODUCT_GET_ARGS,
+                     **PRODUCT_MEAS_GET_KWARGS)
+            rsps.add(*PRODUCT_OPTIONS_ARGS,
+                     **PRODUCT_OPTIONS_KWARGS)
+            rsps.add(*MEAS_OPTIONS_ARGS,
+                     **MEAS_OPTIONS_KWARGS)
+            self.table_cls_names = generate_classes(API_URL, API_USER, API_PWD)
+            self.add_available_tables()
 
     def add_available_tables(self):
         """
@@ -66,6 +88,7 @@ class AdminView(QObject):
         self.__tab_list = TableList(list_dock,
                                     use_debug_server=use_debug_server)
         self.__tab_list.itemSelectionChanged.connect(self.update_view)
+        self.__column_fields = []
         list_dock.setWidget(self.__tab_list)
         parent.addDockWidget(Qt.LeftDockWidgetArea, list_dock)
 
@@ -77,37 +100,47 @@ class AdminView(QObject):
         item = self.__tab_list.selectedItems()[0]
         self.create_table(item)
 
-    @responses.activate  # pylint: disable=E1101
     def create_table(self, item):
         """
         Creates the filled table for the selected item
         :param item: Selected item
         """
-        if self.__use_debug_server:
-            responses.add(*PRODUCT_LIST_GET_ARGS,   # pylint: disable=E1101
-                          **PRODUCT_LIST_GET_KWARGS)
-            responses.add(*MEAS_LIST_GET_ARGS,   # pylint: disable=E1101
-                          **MEAS_LIST_GET_KWARGS)
-        objects = get_objects(API_URL, item.text(), API_USER, API_PWD)
-        tab_name = '{0} table'.format(item.text())
-        members = objects[0].get_fields()
-        self.__current_table = QTableWidget(len(objects),
-                                            len(members),
-                                            self.__parent,
-                                            objectName=tab_name)
+        with RequestMock(self.__use_debug_server) as rsps:
+            rsps.add(*PRODUCT_LIST_GET_ARGS,
+                     **PRODUCT_LIST_GET_KWARGS)
+            rsps.add(*MEAS_LIST_GET_ARGS,
+                     **MEAS_LIST_GET_KWARGS)
+            objects = get_objects(API_URL, item.text(), API_USER, API_PWD)
+            tab_name = '{0} table'.format(item.text())
+            members = objects[0].get_fields()
+            self.__current_table = QTableWidget(len(objects),
+                                                len(members),
+                                                self.__parent,
+                                                objectName=tab_name)
+            self.__column_fields = []
+            for i, obj in enumerate(objects):
+                for j, mem in enumerate(members):
+                    field = getattr(obj, mem + '_field')
+                    if i == 0:
+                        label = field.label
+                        self.__current_table.setHorizontalHeaderItem(
+                            j, QTableWidgetItem(label))
+                        self.__column_fields.append(mem)
+                    value = getattr(obj, mem)
+                    if isinstance(value, list):
+                        value = '\n'.join(value)
+                    table_item = QTableWidgetItem(value)
+                    table_item.setData(Qt.UserRole, obj)
+                    if field.read_only:
+                        table_item.setFlags(Qt.ItemIsEnabled)
+                    self.__current_table.setItem(i, j, table_item)
+            self.__current_table.itemChanged.connect(self.item_changed)
+            self.__parent.setCentralWidget(self.__current_table)
 
-        for i, obj in enumerate(objects):
-            for j, mem in enumerate(members):
-                field = getattr(obj, mem + '_field')
-                if i == 0:
-                    label = field.label
-                    self.__current_table.setHorizontalHeaderItem(
-                        j, QTableWidgetItem(label))
-                value = getattr(obj, mem)
-                if isinstance(value, list):
-                    value = '\n'.join(value)
-                table_item = QTableWidgetItem(value)
-                if field.read_only:
-                    table_item.setFlags(Qt.ItemIsEnabled)
-                self.__current_table.setItem(i, j, table_item)
-        self.__parent.setCentralWidget(self.__current_table)
+    def item_changed(self, item):
+        """
+        Sends the changes back to the server
+        """
+        obj = item.data(Qt.UserRole)
+        setattr(obj, self.__column_fields[item.column()], item.text())
+        obj.patch()

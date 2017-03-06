@@ -6,6 +6,7 @@ Project wide settings, some are only for dev and will be replaced with
 with persistance, changeable options
 """
 
-API_URL = 'http://test/api/'
-API_USER = 'me'
-API_PWD = 'you'
+
+API_URL = 'http://127.0.0.1:8000/api/'
+API_USER = 'apitester'
+API_PWD = 'password'

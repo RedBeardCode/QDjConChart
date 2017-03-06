@@ -6,12 +6,12 @@ File with sample responses of the Rest Server
 """
 import responses
 
-PRODUCT_GET_ARGS = (responses.GET, 'http://test/api/')  # pylint: disable=E1101
+PRODUCT_GET_ARGS = (responses.GET, 'http://127.0.0.1:8000/api/')  # pylint: disable=E1101
 PRODUCT_GET_KWARGS = {
     'body': '{"product": "http://127.0.0.1:8000/api/product/"}',
     'status': 200,
     'content_type': 'application/json'}
-PRODUCT_LIST_GET_ARGS = (responses.GET, 'http://test/api/product')  # pylint: disable=E1101
+PRODUCT_LIST_GET_ARGS = (responses.GET, 'http://127.0.0.1:8000/api/product')  # pylint: disable=E1101
 PRODUCT_LIST_GET_KWARGS = {
     'body': """[
                 {
@@ -35,7 +35,7 @@ PRODUCT_MEAS_GET_KWARGS = {
             '"measurement": "http://127.0.0.1:8000/api/measurement/"}',
     'status': 200,
     'content_type': 'application/json'}
-PRODUCT_OPTIONS_ARGS = (responses.OPTIONS, 'http://test/api/product')  # pylint: disable=E1101
+PRODUCT_OPTIONS_ARGS = (responses.OPTIONS, 'http://127.0.0.1:8000/api/product')  # pylint: disable=E1101
 PRODUCT_OPTIONS_KWARGS = {
     'body': """{
                 "name": "Product Rest List",
@@ -71,7 +71,8 @@ PRODUCT_OPTIONS_KWARGS = {
     'status': 200,
     'content_type': 'application/json'}
 
-MEAS_OPTIONS_ARGS = (responses.OPTIONS, 'http://test/api/measurement')  # pylint: disable=E1101
+MEAS_OPTIONS_ARGS = (responses.OPTIONS,  # pylint: disable=E1101
+                     'http://127.0.0.1:8000/api/measurement')
 
 MEAS_OPTIONS_KWARGS = {
     'body': """{
@@ -167,7 +168,7 @@ MEAS_OPTIONS_KWARGS = {
     'content_type': 'application/json'}
 
 
-MEAS_LIST_GET_ARGS = (responses.GET, 'http://test/api/measurement')  # pylint: disable=E1101
+MEAS_LIST_GET_ARGS = (responses.GET, 'http://127.0.0.1:8000/api/measurement')  # pylint: disable=E1101
 MEAS_LIST_GET_KWARGS = {
     'body': """
         [

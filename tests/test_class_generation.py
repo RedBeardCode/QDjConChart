@@ -20,7 +20,7 @@ from .rest_responses import MEAS_OPTIONS_ARGS, MEAS_OPTIONS_KWARGS
 @responses.activate  # pylint: disable=E1101
 def test_getting_classes():
     responses.add(*PRODUCT_GET_ARGS, **PRODUCT_MEAS_GET_KWARGS)  # pylint: disable=E1101
-    classes = get_provided_classes('http://test/api/', 'me', 'you')
+    classes = get_provided_classes('http://127.0.0.1:8000/api/', 'me', 'you')
     assert len(classes) == 2
     for cls in classes:
         assert cls in ['Product', 'Measurement']
@@ -30,7 +30,8 @@ def test_getting_classes():
 def test_getting_meta():
     responses.add(*PRODUCT_OPTIONS_ARGS,  # pylint: disable=E1101
                   **PRODUCT_OPTIONS_KWARGS)
-    resp_meta = get_class_meta('http://test/api/', 'Product', 'me', 'you')
+    resp_meta = get_class_meta('http://127.0.0.1:8000/api/',
+                               'Product', 'me', 'you')
     meta = {'product_name': {'type': 'string', 'required': True,
                              'read_only': False, 'label': 'Product name',
                              'max_length': 30}}
@@ -41,7 +42,7 @@ def test_getting_meta():
 def test_create_classes():
     responses.add(*PRODUCT_GET_ARGS, **PRODUCT_GET_KWARGS)  # pylint: disable=E1101
     responses.add(*PRODUCT_OPTIONS_ARGS, **PRODUCT_OPTIONS_KWARGS)  # pylint: disable=E1101
-    cls_names = generate_classes('http://test/api/', 'me', 'you')
+    cls_names = generate_classes('http://127.0.0.1:8000/api/', 'me', 'you')
     assert cls_names == ['Product']
     try:
         from rest_client.generate_classes import Product
@@ -71,7 +72,7 @@ def test_properties():
                   **MEAS_OPTIONS_KWARGS)
     responses.add(*PRODUCT_OPTIONS_ARGS,  # pylint: disable=E1101
                   **PRODUCT_OPTIONS_KWARGS)
-    _ = generate_classes('http://test/api/', 'me', 'you')
+    _ = generate_classes('http://127.0.0.1:8000/api/', 'me', 'you')
     try:
         from rest_client.generate_classes import Measurement
     except ImportError:
@@ -88,7 +89,8 @@ def test_properties():
 @responses.activate  # pylint: disable=E1101
 def test_get_objects():
     responses.add(*PRODUCT_LIST_GET_ARGS, **PRODUCT_LIST_GET_KWARGS)  # pylint: disable=E1101
-    obj_list = get_objects('http://test/api/', 'Product', 'me', 'you')
+    obj_list = get_objects('http://127.0.0.1:8000/api/',
+                           'Product', 'me', 'you')
     assert len(obj_list) == 3
     product_names = [obj.product_name for obj in obj_list]
     for i, obj in enumerate(obj_list):
@@ -102,7 +104,7 @@ def test_get_objects():
 def test_get_fields():
     responses.add(*PRODUCT_GET_ARGS, **PRODUCT_GET_KWARGS)  # pylint: disable=E1101
     responses.add(*PRODUCT_OPTIONS_ARGS, **PRODUCT_OPTIONS_KWARGS)  # pylint: disable=E1101
-    cls_names = generate_classes('http://test/api/', 'me', 'you')
+    cls_names = generate_classes('http://127.0.0.1:8000/api/', 'me', 'you')
     assert cls_names == ['Product']
     try:
         from rest_client.generate_classes import Product
@@ -114,14 +116,17 @@ def test_get_fields():
 
 
 @responses.activate  # pylint: disable=E1101
-def test_post_object():
+def test_patch_object():
     responses.add(*PRODUCT_LIST_GET_ARGS,  # pylint: disable=E1101
                   **PRODUCT_LIST_GET_KWARGS)
-    responses.add(responses.POST, 'http://127.0.0.1:8000/api/product/1/')  # pylint: disable=E1101
-    obj_list = get_objects('http://test/api/', 'Product', 'me', 'you')
+    responses.add(responses.PATCH, 'http://127.0.0.1:8000/api/product/1/')  # pylint: disable=E1101
+    obj_list = get_objects('http://127.0.0.1:8000/api/',
+                           'Product', 'me', 'you')
     obj = obj_list[0]
     obj.product_name = 'Spam and eggs'
-    obj.post()
+    obj.patch()
     assert len(responses.calls) == 2  # pylint: disable=E1101
     body = responses.calls[1].request.body  # pylint: disable=E1101
-    assert body == '{"product_name": "Spam and eggs"}'
+    assert body == b'{"product_name": "Spam and eggs"}'
+    with pytest.raises(OSError):
+        obj_list[1].patch()

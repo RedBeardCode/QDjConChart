@@ -4,11 +4,10 @@
 """
 Generating the classes for the provides Models from the rest api
 """
-from json import dumps
 from types import new_class
 
 from requests import get, options
-from requests import post
+from requests import patch
 
 
 class RestBase(object):  # pylint: disable=R0903
@@ -52,7 +51,7 @@ class RestBase(object):  # pylint: disable=R0903
                   and not mem.endswith('_field')]
         return fields
 
-    def post(self):
+    def patch(self):
         """
         Sending update of the object back to rest server
         """
@@ -61,8 +60,11 @@ class RestBase(object):  # pylint: disable=R0903
         field_dict = dict(zip(field_names, values))
         for field in field_names:
             field_dict[field] = getattr(self, field)
-        field_json = dumps(field_dict)
-        post(self.url, field_json, auth=(self.__user, self.__pwd))
+        resp = patch(self.url, json=field_dict, auth=(self.__user, self.__pwd))
+        if resp.status_code != 200:
+            raise ConnectionError(
+                'Couldn´t patch value. Server answered wit {0}'.format(
+                    resp.status_code))
 
 
 class Field(object):
