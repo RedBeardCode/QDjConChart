@@ -226,7 +226,7 @@ def generate_classes(rooturl, user, pwd):
         cls = new_class(name, (RestBase,))
         setattr(cls, 'meta', meta)
         globals()[name] = cls
-    return cls_names
+    return sorted(cls_names)
 
 
 def get_objects(rooturl, clsname, user, pwd):
